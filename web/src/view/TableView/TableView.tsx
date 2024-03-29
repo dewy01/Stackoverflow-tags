@@ -14,16 +14,29 @@ import { useSearchParams } from "react-router-dom";
 
 export const TableView = () => {
   const [searchParams, setSearchParams] = useSearchParams({
-    pageSize: "10",
-    sort: "name",
-    order: "desc",
-    site: "stackoverflow",
     page: "1",
+    pageSize: "10",
+    sort: "popular",
+    order: "desc",
   });
 
   const handleParamChange = (paramName: string) => (event: any) => {
     setSearchParams((prev) => {
       prev.set(paramName, event.target.value);
+      return prev;
+    });
+    setSearchParams((prev) => {
+      prev.set("page", "1");
+      return prev;
+    });
+  };
+
+  const handleChangePage = (
+    event: React.MouseEvent<HTMLButtonElement> | null,
+    newPage: number
+  ) => {
+    setSearchParams((prev) => {
+      prev.set("page", newPage.toString());
       return prev;
     });
   };
@@ -33,12 +46,20 @@ export const TableView = () => {
     page: searchParams.get("page") || undefined,
     order: searchParams.get("order") || undefined,
     sort: searchParams.get("sort") || undefined,
+    site: "stackoverflow",
   });
 
   const getQueryParam = (paramName: string) => searchParams.get(paramName);
 
   return (
-    <Container sx={{ display: "flex", flexDirection: "column", gap: 5 }}>
+    <Container
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        gap: 5,
+        justifyContent: "space-evenly",
+      }}
+    >
       <Typography variant="h3" gutterBottom>
         Stack Overflow Tags Browser
       </Typography>
@@ -46,6 +67,7 @@ export const TableView = () => {
         <FormControl sx={{ minWidth: "100px" }}>
           <InputLabel id="sort-label">Sort By</InputLabel>
           <Select
+            sx={{ width: "150px", textAlign: "left" }}
             labelId="sort-label"
             label="Sort By"
             id="sort"
@@ -53,13 +75,15 @@ export const TableView = () => {
             onChange={handleParamChange("sort")}
           >
             <MenuItem value="name">Name</MenuItem>
-            <MenuItem value="count">Count</MenuItem>
+            <MenuItem value="activity">Activity</MenuItem>
+            <MenuItem value="popular">Popularity</MenuItem>
           </Select>
         </FormControl>
 
         <FormControl sx={{ minWidth: "100px" }}>
           <InputLabel id="order-label">Order</InputLabel>
           <Select
+            sx={{ width: "150px", textAlign: "left" }}
             labelId="order-label"
             label="Order"
             id="order"
@@ -70,20 +94,30 @@ export const TableView = () => {
             <MenuItem value="desc">Descending</MenuItem>
           </Select>
         </FormControl>
+        <TablePagination
+          slotProps={{
+            actions: {
+              previousButton: {
+                disabled: getQueryParam("page") === "1",
+              },
+              nextButton: {
+                disabled: data?.has_more === false,
+              },
+            },
+          }}
+          component="div"
+          count={data ? data.quota_max : 0}
+          page={parseInt(getQueryParam("page") || "0")}
+          rowsPerPage={parseInt(getQueryParam("pageSize") || "10")}
+          rowsPerPageOptions={[5, 10, 20]}
+          onPageChange={handleChangePage}
+          onRowsPerPageChange={handleParamChange("pageSize")}
+        />
       </Box>
       <TagTable
         loading={isLoading}
         isError={isError}
         tags={data?.items || []}
-      />
-      <TablePagination
-        component="div"
-        count={data ? data.items.length : 0}
-        page={parseInt(getQueryParam("page") || "1") - 1}
-        rowsPerPage={parseInt(getQueryParam("pageSize") || "10")}
-        rowsPerPageOptions={[5, 10, 20]}
-        onPageChange={handleParamChange("page")}
-        onRowsPerPageChange={handleParamChange("pageSize")}
       />
     </Container>
   );

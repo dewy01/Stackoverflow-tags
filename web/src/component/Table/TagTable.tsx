@@ -60,23 +60,31 @@ export const TagTable = ({ loading, isError, tags }: TagTableProps) => {
   return (
     <TableContainer
       component={Paper}
-      sx={{ minHeight: "500px", maxHeight: "500px", width: "800px" }}
+      sx={{ height: "500px", maxHeight: "500px", width: "800px" }}
     >
       {loading || isError ? (
         <Fallback loading={loading} isError={isError} />
       ) : (
-        <Table>
+        <Table stickyHeader>
           <TableHead>
             <TableRow>
-              <TableCell>Tag</TableCell>
-              <TableCell>Count</TableCell>
+              <TableCell align="left">Tag</TableCell>
+              <TableCell align="center">Count</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {tags.map((tag) => (
-              <TableRow key={tag.name}>
-                <TableCell>{tag.name}</TableCell>
-                <TableCell>{tag.count}</TableCell>
+              <TableRow
+                key={tag.name}
+                sx={(theme) => ({
+                  "&:hover": {
+                    backgroundColor: theme.palette.action.hover,
+                  },
+                  textAlign: "center",
+                })}
+              >
+                <TableCell align="left">{tag.name}</TableCell>
+                <TableCell align="center">{tag.count}</TableCell>
               </TableRow>
             ))}
           </TableBody>
